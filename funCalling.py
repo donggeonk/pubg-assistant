@@ -9,19 +9,21 @@ load_dotenv()
 # Initialize OpenAI client with the API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-'''
-# Responses API
-response = client.responses.create(
-  model="gpt-4o-mini",
-  instructions="You are a helpful assistant that answers briefly in one sentence.",
-  input="What is an apple?",
-  stream=False
-)
-
-print(response.output_text)
-'''
-
 user_input = input("User: ")
+
+def get_temperature(city):
+    if city == "Seoul":
+        return 25
+    elif city == "New York":
+        return 15
+    elif city == "Tokyo":
+        return 20
+    elif city == "London":
+        return 10
+    else:
+        return None
+    
+
 
 #Chat Completion API
 response = client.chat.completions.create(
