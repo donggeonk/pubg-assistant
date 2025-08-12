@@ -10,6 +10,34 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 user_input = input("User: ")
 
+
+def get_temperature(city):
+    if city == "Seoul":
+        return 25
+    elif city == "New York":
+        return 15
+    elif city == "Tokyo":
+        return 20
+    elif city == "London":
+        return 10
+    else:
+        return None
+
+
+functions = [{
+    "type": "function",
+    "name": "get_temperature",
+    "description": "Get the current temperature for the provided city in celsius.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {"type": "string", "description": "Name of the city"},
+        },
+        "required": ["city"],},
+    }
+]
+
+
 # Chat Completion API
 response = client.chat.completions.create(
   model="gpt-4o",
