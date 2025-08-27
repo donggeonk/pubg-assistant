@@ -17,7 +17,8 @@ def get_weather(city: str) -> float:
     resp.raise_for_status() # Raise an error for bad responses (4xx, 5xx)
 
     data = resp.json()
-    print(data)
+    # print(resp)
+    # print(data)
     weather = {
         "temp_c": data["main"]["temp"],
         "description": data["weather"][0]["description"],
@@ -27,18 +28,20 @@ def get_weather(city: str) -> float:
     # temperature = weather["temp_c"]
     return weather
 
-city = input("Enter city name: ")
-try:
-    weather = get_weather(city)
-    print(f"Current weather in {city}:")
-    print(f"Temperature: {weather['temp_c']}°C")
-    print(f"Conditions: {weather['description']}")
-    print(f"Humidity: {weather['humidity_pct']}%")
-    print(f"Wind Speed: {weather['wind_kph']:.1f} km/h")
-except requests.HTTPError as e:
-    print("Failed to fetch weather:", e)
-except KeyError:
-    print("Unexpected response format")
+# get_weather("Seoul")
+
+# city = input("Enter city name: ")
+# try:
+#     weather = get_weather(city)
+#     print(f"Current weather in {city}:")
+#     print(f"Temperature: {weather['temp_c']}°C")
+#     print(f"Conditions: {weather['description']}")
+#     print(f"Humidity: {weather['humidity_pct']}%")
+#     print(f"Wind Speed: {weather['wind_kph']:.1f} km/h")
+# except requests.HTTPError as e:
+#     print("Failed to fetch weather:", e)
+# except KeyError:
+#     print("Unexpected response format")
 
 
 
