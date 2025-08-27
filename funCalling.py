@@ -3,69 +3,17 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import os
 import json
+from tools import get_weather
 
 # create LLM client
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Inventory -> LLM can use information from this function to answer user's questions
-def get_temperature(city):
-    if city == "Seoul":
-        return 30
-    if city == "London":
-        return 28
-    if city == "Tokyo":
-        return 29
-    if city == "San Diego":
-        return 24
-    
-def get_humidity(city):
-    if city == "Seoul":
-        return 65
-    if city == "London":
-        return 76
-    if city == "Tokyo":
-        return 64
-    if city == "San Diego":
-        return 56
-    
-def get_wind_speed(city):
-    if city == "Seoul":
-        return 7
-    if city == "London":
-        return 8
-    if city == "Tokyo":
-        return 6
-    if city == "San Diego":
-        return 10
-
 # Define the tool for the LLM to call - tell AI abotut the function
 functions = [{
     "type": "function",
-    "name": "get_temperature",
-    "description": "Get the current, not yesterday or any time but current, right now, temperature for the provided city in celsius.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "city": {"type": "string", "description": "Name of the city"},
-        },
-        "required": ["city"],},
-    },
-    {
-    "type": "function",
-    "name": "get_humidity",
-    "description": "Get the current, not yesterday or any time but current, right now, humidity for the provided city in percentage.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "city": {"type": "string", "description": "Name of the city"},
-        },
-        "required": ["city"],},
-    },
-    {
-    "type": "function",
-    "name": "get_wind_speed",
-    "description": "Get the current, not yesterday or any time but current, right now, wind speed for the provided city in kilometers per hour.",
+    "name": "get_weather",
+    "description": "Get the current, not yesterday or any time but current, right now, weather (which includes temperature, humidity, etc.) for the provided city in an appropriate unit. .",
     "parameters": {
         "type": "object",
         "properties": {
@@ -91,24 +39,20 @@ response = client.chat.completions.create(
 
 # first AI decision - understanding the user's question and deciding whether to call a function or not
 message = response.choices[0].message
-print("First LLM response:", message)
+#print("First LLM response:", message)
 
 
 if message.function_call:
     func_name = message.function_call.name
     args = json.loads(message.function_call.arguments)
 
-    if func_name == "get_temperature":
-        temp = get_temperature(**args)
-        function_response = { "temperature": temp }
-    if func_name == "get_humidity":
-        humidity = get_humidity(**args)
-        function_response = { "humidity": humidity}
-    if func_name == "get_wind_speed":
-        wind_speed = get_wind_speed(**args)
-        function_response = { "wind_speed": wind_speed}
-    else:
-        print("Unknown function call:", func_name)
+    weather_data = get_weather(**args)
+    
+    temp = {"temperature": weather_data["temp_c"]}
+    description = {"description": weather_data["description"]}
+    humidity = {"humidity": weather_data["humidity_pct"]}
+    wind_speed = {"wind_speed": weather_data["wind_kph"]}
+    function_response = {**temp, **description, **humidity, **wind_speed}
 
 
     followup_messages = [
