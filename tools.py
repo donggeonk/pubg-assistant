@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 # 1. Load the API key from .env
 load_dotenv()  
 API_KEY = os.getenv("WEATHER_API_KEY")
+PUBG_API_KEY = os.getenv("PUBG_API_KEY")
+
+def pubg_tool():
+    return None
 
 def get_weather(city: str) -> float:
     endpoint = "https://api.openweathermap.org/data/2.5/weather"
