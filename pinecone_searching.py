@@ -85,6 +85,6 @@ print("Rerank:", reranked_results)
 # Delete the index
 # pc.delete_index(index_name)
 
-top1 = ranked_results["result"]["hits"][0]["fields"]["chunk_text"]
+top1 = reranked_results["result"]["hits"][0]["fields"]["chunk_text"]
 print("---top1---")
 print(top1)
