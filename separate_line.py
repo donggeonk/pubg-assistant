@@ -1,27 +1,28 @@
 # text -> separate into lines -> upsert into Pinecone (vector database) -> give the most similar lines to AI -> AI reply as a human
-
 # separating text into lines
+import re
 
-# input - path
-# output - records dictionary
+#path = "/Users/eugene/Desktop/ChatBot Project/chatbot/PUBG Rules.txt"
 
-path = "/Users/eugene/Desktop/ChatBot Project/chatbot/PUBG Rules.txt"
-   
-def separate_liens(path):
+# input = path to the pubg file
+# output = formatted records for Pinecone upsert
+def separate_lines(path):
     with open(path, encoding="utf-8") as f:
-     raw = f.read()
+        raw = f.read()
 
-    # split on blank lines into non-empty paragraphs
-    paragraphs = [p.strip() for p in raw.split("\n\n") if p.strip()]
+    # split into sentences on terminal punctuation (. ! ?) followed by whitespace
+    # keeps the punctuation at the end of each sentence
+    pieces = [piece.strip() for piece in re.split(r'(?<=[.!?])\s+', raw) if piece.strip()]
 
-    # Build records for upsert
     records = []
-    for i, para in enumerate(paragraphs, start=1):
-     records.append({
+    for i, piece in enumerate(pieces, start=1):
+        records.append({
             "_id": f"rec{i}",
-           "chunk_text": para,
-      })
+            "chunk_text": piece,
+        })
+    
+    return records
 
-    return(records)
 
-print(separate_liens(path))
+#records = separate_lines(path)
+#print(len(records), records)
