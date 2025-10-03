@@ -3,12 +3,10 @@ import json
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
 PUBG_API_KEY = os.getenv("PUBG_API_KEY")
 
-
+# STEP 1: Get Player Info (to obtain player ID)
 def get_player_info(player_name: str, api_key: str, platform_region: str = "steam") -> dict:
     """
     STEP 1: Fetches a player's basic account information, primarily their ID.
@@ -39,6 +37,8 @@ def get_player_info(player_name: str, api_key: str, platform_region: str = "stea
     except requests.exceptions.RequestException as e:
         return {"error": f"Request Error: {e}"}
 
+
+# STEP 2: Get Player Lifetime Stats
 def get_player_lifetime_stats(player_id: str, api_key: str, platform_region: str = "steam") -> dict:
     """
     STEP 2: Fetches a player's lifetime stats using their account ID.
@@ -64,28 +64,27 @@ def get_player_lifetime_stats(player_id: str, api_key: str, platform_region: str
         return {"error": f"Request Error: {e}"}
 
 
-if __name__ == "__main__":
-    player_name_to_find = "Scout" # Example player name
-    
+# Combined function
+def get_pubg_data(player_name):
     # --- STEP 1: Get the Player ID ---
-    print(f"Searching for player '{player_name_to_find}'...")
-    player_account_info = get_player_info(player_name_to_find, PUBG_API_KEY)
-    
+    player_account_info = get_player_info(player_name, PUBG_API_KEY)
     if "error" in player_account_info:
         print(f"An error occurred: {player_account_info['error']}")
     else:
         player_id = player_account_info['id']
-        print(f"Successfully found player!")
-        print(f"  Player Name: {player_account_info['name']}")
-        print(f"  Player ID: {player_id}\n")
-
         # --- STEP 2: Use the ID to get Lifetime Stats ---
-        print(f"Fetching lifetime stats for {player_account_info['name']}...")
         stats = get_player_lifetime_stats(player_id, PUBG_API_KEY)
 
         if "error" in stats:
             print(f"An error occurred while fetching stats: {stats['error']}")
         else:
-            print("Successfully retrieved stats!")
-            # Use json.dumps for a nicely formatted print of the stats dictionary
-            print(json.dumps(stats, indent=4))
+            return stats["squad-fpp"]  # Example: return squad first-person stats
+
+'''
+if __name__ == "__main__":
+    player_name = "Ots_Numb_"
+    stats = get_pubg_data(player_name)
+    # print(json.dumps(stats, indent=4))
+    print(stats)
+'''
+    
