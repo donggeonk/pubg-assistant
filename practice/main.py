@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
-from chat import get_response
+from web.chat import get_response
 
 # Load environment variables from .env file
 load_dotenv()
