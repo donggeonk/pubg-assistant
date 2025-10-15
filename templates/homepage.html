@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PUBG Chatbot</title>
+  <style>
+    :root {
+      --chat-bg: rgba(30, 30, 30, 0.9);
+      --user-msg-bg: #004d99;
+      --bot-msg-bg: #333333;
+      --text-color: #e0e0e0;
+      --header-color: #f0f0f0;
+      --input-bg: #2c2c2c;
+      --border-color: #444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-image: url("{{ url_for('static', filename='pubg_background.jpg') }}");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      
+      color: var(--text-color);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 900px; /* --- CHANGED THIS LINE --- */
+      height: 90vh;
+      background-color: var(--chat-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .chat-header {
+      padding: 15px 20px;
+      background-color: rgba(30, 30, 30, 0.8);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .chat-header img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .chat-header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--header-color);
+    }
+
+    .chat-messages {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .message {
+        padding: 10px 15px;
+        border-radius: 18px;
+        max-width: 80%;
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
+    .message.user {
+        background-color: var(--user-msg-bg);
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message.bot {
+        background-color: var(--bot-msg-bg);
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+    }
+    
+    .message.loading {
+        background-color: var(--bot-msg-bg);
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        color: #888;
+        font-style: italic;
+    }
+
+    .chat-input-form {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid var(--border-color);
+      background-color: rgba(30, 30, 30, 0.8);
+    }
+
+    #userInput {
+      flex-grow: 1;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      margin-right: 10px;
+    }
+
+    #userInput:focus {
+        outline: none;
+        border-color: var(--user-msg-bg);
+    }
+
+    #sendBtn {
+      padding: 10px 20px;
+      border: none;
+      background-color: var(--user-msg-bg);
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+    }
+
+    #sendBtn:hover {
+      background-color: #005fcc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <img src="{{ url_for('static', filename='pubg_logo.png') }}" alt="PUBG Logo">
+      <h1>PUBG Assistant</h1>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+        <div class="message bot">
+            Hello! How can I help you with PUBG rules or player stats today?
+        </div>
+    </div>
+    <form class="chat-input-form" id="chat-form">
+      <input id="userInput" type="text" placeholder="Ask about rules or player stats..." autocomplete="off"/>
+      <button id="sendBtn" type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("userInput");
+    const chatMessages = document.getElementById("chat-messages");
+
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", sender);
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return messageDiv;
+    }
+
+    chatForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const userText = userInput.value.trim();
+        if (!userText) return;
+
+        addMessage(userText, "user");
+        userInput.value = "";
+
+        const loadingMessage = addMessage("Thinking...", "loading");
+
+        try {
+            const res = await fetch("/api/echo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userText })
+            });
+
+            if (!res.ok) {
+                throw new Error(`Server responded with status: ${res.status}`);
+            }
+            
+            const data = await res.json();
+            const botReply = data.message.startsWith("Bot: ") ? data.message.substring(5) : data.message;
+            
+            loadingMessage.remove();
+            addMessage(botReply, "bot");
+
+        } catch (err) {
+            loadingMessage.textContent = "Error: Could not get a response.";
+            console.error("Fetch Error:", err);
+        }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Flask Example</title>
+</head>
+<body>
+  <h1>Flask → Frontend Fetch Demo</h1>
+
+  <!-- input -->
+  <input id="userInput" type="text" placeholder="User: " />
+  <button id="echoBtn">Send</button>
+  <p id="bot">Bot: </p>
+
+  <!-- output -->
+  <button id="btn">Get Greeting</button>
+  <button id="removeTextBtn">Remove Text</button>
+  <p id="output">Text</p>
+  
+
+  <script>
+    const echoBtn      = document.getElementById("echoBtn");
+    const userInput    = document.getElementById("userInput");
+    const userOutput = document.getElementById("bot"); // Element to display the output
+
+    const output = document.getElementById("output"); // Element to display the output
+    const btn    = document.getElementById("btn"); // Button to trigger fetch
+    const removeTextBtn = document.getElementById("removeTextBtn"); // Button to remove text
+
+    // Echo handler
+    echoBtn.onclick = async () => {
+      const text = userInput.value.trim();
+      if (!text) return;
+      userOutput.textContent = "Loading…";
+      try {
+        const res  = await fetch("/api/echo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        userOutput.textContent = data.message;
+      } catch (err) {
+        userOutput.textContent = "Error: " + err;
+      }
+    };
+
+    // Fetch greeting
+    btn.onclick = async () => {
+      output.textContent = "Loading…";
+      try {
+        const res = await fetch("/api/greet");
+        const data = await res.json();
+        output.textContent = data.message;
+      } catch (err) {
+        output.textContent = "Error: " + err;
+      }
+    };
+
+    // Function to remove text
+    removeTextBtn.onclick = async () => {
+      try {
+        const res = await fetch("/api/remove_text");
+        const data = await res.json();
+        output.textContent = data.message;
+      } catch (err) {
+        output.textContent = "Error: " + err;
+      }
+    };
+
+  </script>
+</body>
+</html>
