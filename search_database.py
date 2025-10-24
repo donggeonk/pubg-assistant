@@ -9,7 +9,8 @@ from separate_line import separate_lines
 # Initialize Pinecone with your API key
 load_dotenv()
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-document = "/Users/stevehawkim/Desktop/Tutoring/2025/Eugene/chatbot/pubg_rule.txt"
+script_dir = os.path.dirname(__file__)
+document = os.path.join(script_dir, 'pubg_rule.txt')
 
 def search(query):
     """
